@@ -30,6 +30,12 @@ async def start(update, context):
         "👋 ابعت الصور اللي عايز تحولها PDF"
     )
 
+#الحته بتاعت الرد علي الصور الي عدلتها بعد مقالي عليها ابو حماد 
+
+# فوق user_data ضيف دي
+processed_media_groups = set()
+
+
 # handle photos
 async def handle_photo(update, context):
     user_id = update.effective_user.id
@@ -37,6 +43,7 @@ async def handle_photo(update, context):
     if user_id not in user_data:
         user_data[user_id] = {"images": [], "waiting_name": False}
 
+    # حفظ الصورة
     photo = update.message.photo[-1]
     file = await context.bot.get_file(photo.file_id)
 
@@ -45,13 +52,25 @@ async def handle_photo(update, context):
 
     user_data[user_id]["images"].append(img_path)
 
-    # زر واحد فقط Done
+    media_group_id = update.message.media_group_id
+
+    # لو جروب صور
+    if media_group_id:
+
+        # لو الرسالة اتبعتت قبل كده لنفس الجروب
+        if media_group_id in processed_media_groups:
+            return
+
+        # سجل الجروب
+        processed_media_groups.add(media_group_id)
+
+    # زر Done
     keyboard = [
-        [InlineKeyboardButton("Done ✅ ", callback_data="done")]
+        [InlineKeyboardButton("Done ✅", callback_data="done")]
     ]
 
     await update.message.reply_text(
-        "  📸 تم حفظ الصورة لو فيه صور تاني ابعتها \n  لو مفيش صور تاني اضغط Done  ",
+        "📸 تم حفظ الصور\nلو فيه صور تاني ابعتها\nلو مفيش اضغط Done ✅",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
